@@ -145,7 +145,7 @@ export class IIDX extends GameClass {
     }
 
     openCustomize() {
-        window.laochan.shellExecute('http://laochan.ugreen.sbs/cp');
+        window.laochan.shellExecute('http://localhost:8080/cp');
     }
 
     async generateBat() {

@@ -66,7 +66,7 @@ onMounted(() => {
                         <div class="miscs" v-if="game.installed && game.versionState.value == VersionState.Normal">
                             <template v-if="game.className == 'iidx'">
                                 <RouterLink to="/iidx/settings">
-                                    <button class="crystal" title="打开更多设置">
+                                    <button class="crystal" title="Open More Settings">
                                         <div class="gloss"></div>
                                         <div class="shadow"></div>
                                         <div class="content">
@@ -74,7 +74,7 @@ onMounted(() => {
                                         </div>-
                                     </button>
                                 </RouterLink>
-                                <button class="crystal" title="打开自定义" :onclick="() => iidx.openCustomize()">
+                                <button class="crystal" title="Open Customisation" :onclick="() => iidx.openCustomize()">
                                     <div class="gloss"></div>
                                     <div class="shadow"></div>
                                     <div class="content">
@@ -82,14 +82,14 @@ onMounted(() => {
                                     </div>-
                                 </button>
                             </template>
-                            <button class="crystal" title="打开游戏设置" :onclick="() => game.settings()">
+                            <button class="crystal" title="Open the game settings" :onclick="() => game.settings()">
                                 <div class="gloss"></div>
                                 <div class="shadow"></div>
                                 <div class="content">
                                     <FontAwesomeIcon :icon="faGear"></FontAwesomeIcon>
                                 </div>-
                             </button>
-                            <button class="crystal" title="打开更新器" :onclick="() => game.updater()">
+                            <button class="crystal" title="Open the updater" :onclick="() => game.updater()">
                                 <div class="gloss"></div>
                                 <div class="shadow"></div>
                                 <div class="content">
@@ -105,20 +105,20 @@ onMounted(() => {
             <div v-for="game in games"
                 :class="['game', game.className, selectedGame == game.gameIndex ? 'selected' : '']"
                 @click="() => selectedGame = game.gameIndex">
-                <button disabled title="该游戏未安装" v-if="!game.installed">
+                <button disabled title="The game is not installed." v-if="!game.installed">
                     <FontAwesomeIcon :icon="faDownload" size="2x" />
                 </button>
-                <button disabled title="请更新游戏" v-else-if="game.versionState.value == VersionState.Need2UpdateGame">
+                <button disabled title="Please update the game." v-else-if="game.versionState.value == VersionState.Need2UpdateGame">
                     <FontAwesomeIcon :icon="faArrowUpFromBracket" size="2x" />
                 </button>
-                <button disabled title="启动器不支持该版本"
+                <button disabled title="The launcher does not support this version."
                     v-else-if="game.versionState.value == VersionState.Need2UpdateLauncher">
                     <FontAwesomeIcon :icon="faBan" size="2x" />
                 </button>
-                <button disabled v-else-if="game.className == 'gitadora'" title="请选择启动模式">
+                <button disabled v-else-if="game.className == 'gitadora'" title="Please select the start-up mode">
                     <FontAwesomeIcon :icon="faArrowRight" size="2x" />
                 </button>
-                <button v-else title="启动游戏" :onclick="() => games.find(g => g.gameIndex == selectedGame)?.start()">
+                <button v-else title="Launch the game" :onclick="() => games.find(g => g.gameIndex == selectedGame)?.start()">
                     <FontAwesomeIcon :icon="faPlay" size="2x" />
                 </button>
             </div>

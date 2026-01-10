@@ -29,7 +29,7 @@ export class Launcher {
     }
 
     resetServerUrl() {
-        this._config.value!.serverUrl = 'http://laochan.ugreen.sbs/';
+        this._config.value!.serverUrl = 'http://localhost:8080/';
         this._dirty = true;
     }
 

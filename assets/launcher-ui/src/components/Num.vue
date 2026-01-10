@@ -1,5 +1,4 @@
 <script setup lang="ts">
-//@ts-expect-error ??
 import { useSound } from '@vueuse/sound';
 import num from '../assets/num.mp3'
 import { ref } from 'vue';
