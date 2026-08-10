@@ -20,9 +20,23 @@ namespace iidx::patches
 		return service_url.data();
 	}
 
+    // todo: configurable
+    int get_asio_channel_count()
+    {
+		return 8;
+    }
+
 	utils::hook::detour init_superstep_sound_hook;
 	uint64_t __fastcall init_superstep_sound_stub(void* _this, int /* use_asio */, int sample_rate, int16_t bitrate_device, uint32_t bitrate, int channels, int exclusive)
 	{
+		// use 7.1ch output, for cabient
+		if (init_superstep_sound_hook.invoke<uint64_t>(
+			_this, true,
+			sample_rate, bitrate_device, bitrate, get_asio_channel_count(), exclusive
+		)) {
+			return 1;
+		}
+		
 		return init_superstep_sound_hook.invoke<uint64_t>(
 			_this, true,
 			sample_rate, bitrate_device, bitrate, channels, exclusive
@@ -61,6 +75,19 @@ namespace iidx::patches
 		auto snd_mgr = iidx::get_snd_mgr();
 		snd_mgr->mount_sound(80064, 0);
 		return true;
+	}
+
+	utils::hook::detour property_node_refer;
+	int property_node_refer_hook(avs2::property_ptr prop, avs2::node_ptr node, const char* path, avs2::node_type type, void* data, uint32_t data_size)
+	{
+		// force enable premium pass
+		if (type == avs2::node_type::NODE_TYPE_bool && path == "/pdata/premium_pass"s)
+		{
+			*reinterpret_cast<char*>(data) = 1;
+			return 0;
+		}
+
+		return property_node_refer.invoke<int>(prop, node, path, type, data, data_size);
 	}
 
 #ifndef STABLE
@@ -118,6 +145,43 @@ namespace iidx::patches
 	}
 #endif
 
+	void unlock_item(uint8_t* target, const size_t index, const char* item_id, const int free_count, const int non_free_count)
+	{
+		std::memcpy(target + 28 * index, item_id, 9);
+		utils::hook::set<int>(target + 28 * index + 0x14, free_count);
+		utils::hook::set<int>(target + 28 * index + 0x18, non_free_count);
+
+		printf("unlocked %s\n", item_id);
+	}
+
+	int item_list_export_struct(uint8_t* target)
+	{
+		const auto& game_module = game::environment::get_module();
+		
+		static auto items_pattern = game_module.match_sig("89 44 24 58 48 8D 3D ? ? ? ?");
+		static auto items = reinterpret_cast<char**>(items_pattern + 11 + *reinterpret_cast<uint32_t*>(items_pattern + 7));
+
+		int count = 0;
+		for (int i = 0; ; i++)
+		{
+			auto item = items[i];
+
+			// ticket & ldisc
+			if (item[2] == '0')
+				unlock_item(target, count++, item, 9999, 9999);
+			else
+				unlock_item(target, count++, item, 0, 1);
+
+			if (item == "I2199999"s)
+				break;
+		}
+
+		utils::hook::set(target + 28 * count, count);
+		printf("unlocked %d items\n", count);
+
+		return 0;
+	}
+
 	class component final : public component_interface
 	{
 	public:
@@ -147,6 +211,11 @@ namespace iidx::patches
 			utils::hook::jump(get_service_url_loc, get_service_url);
 			printf("Using bootstrap url: %s\n", get_service_url(nullptr, false, false));
 
+			// unlock all items
+			auto item_list_export_struct_loc = game_module.match_sig("75 1C 48 8D 0D ? ? ? ? E8");
+			assert(item_list_export_struct_loc);
+			utils::hook::call(item_list_export_struct_loc + 9, item_list_export_struct);
+
 			// override asio device name
 			if (game::environment::get_param("IIDX_SOUND_MODE") == "1")
 			{
@@ -171,6 +240,8 @@ namespace iidx::patches
 				auto init_superstep_sound_addr = utils::hook::extract<size_t>(retry_logic_sstep_init_call_loc + 8);
 				init_superstep_sound_hook.create(init_superstep_sound_addr, init_superstep_sound_stub);
 			}
+
+			property_node_refer.create(avs2::property_node_refer.get(), property_node_refer_hook);
 		}
 
 		void* load_import(const std::string& library, const std::string& function) override

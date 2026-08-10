@@ -9,6 +9,7 @@
 #pragma warning(disable: 4458)
 #pragma warning(disable: 4459)
 #pragma warning(disable: 4702)
+#pragma warning(disable: 4864)
 #pragma warning(disable: 4996)
 #pragma warning(disable: 5030)
 #pragma warning(disable: 5054)
@@ -50,6 +51,8 @@
 #include <d3d9.h>
 #include <d3d9on12.h>
 #include <d3d12.h>
+#include <mmdeviceapi.h>
+#include <Audioclient.h>
 #include <dwmapi.h>
 
 // min and max is required by gdi, therefore NOMINMAX won't work
