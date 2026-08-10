@@ -155,7 +155,7 @@ namespace iidx::custom_resolution
 		{
 			if (IsEqualCLSID(rclsid, __uuidof(MMDeviceEnumerator)) && IsEqualIID(riid, __uuidof(IMMDeviceEnumerator)))
 			{
-				IMMDeviceEnumerator* enumerator = nullptr;
+				(void)enumerator; // FIX: Bypasses the unused variable C4189 warning
 			}
 			else
 			{
