@@ -1,0 +1,64 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - "stable"
+  pull_request:
+    branches:
+      - "*"
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+    
+
+concurrency:
+  group: ${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build binaries
+    runs-on: windows-2022
+    strategy:
+      matrix:
+        configuration:
+          - Debug
+          - Release
+    steps:
+      - name: Check out files
+        uses: actions/checkout@v3.5.2
+        with:
+          submodules: true
+          fetch-depth: 0
+          # NOTE - If LFS ever starts getting used during builds, switch this to true!
+          lfs: false
+
+      - name: Add msbuild to PATH
+        uses: microsoft/setup-msbuild@v1.3.1
+
+      - name: Generate project files
+        run: tools/premake5 vs2022
+
+      - name: Set up problem matching
+        uses: ammaraskar/msvc-problem-matcher@master
+
+      - name: Build ${{matrix.configuration}} binaries
+        run: msbuild /m /v:minimal /p:Configuration=${{matrix.configuration}} /p:Platform=x64 build/laochan-client.sln
+
+      - name: copy build result
+        run: |
+          copy build\bin\x64\${{matrix.configuration}}\laochan_bootstrap64.exe data\laochan_bootstrap64.exe
+          copy build\bin\x64\${{matrix.configuration}}\laochan_bootstrap64.pdb data\laochan_bootstrap64.pdb
+
+      - name: Download external libraries
+        run: |
+          powershell -NoProfile -ExecutionPolicy Bypass -Command "& '.\tools\download_2dxgsm.ps1'"
+
+      - name: Upload ${{matrix.configuration}} binaries
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{matrix.configuration}} binaries
+          path: |
+            data/laochan_bootstrap64.exe
+            data/laochan_bootstrap64.pdb
+            data/assets
