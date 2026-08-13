@@ -217,26 +217,6 @@ namespace iidx
 		uint32_t song_id;
 		
 		char __gap3[0x17C];
-    // Restored for english-translation compatibility
-    	char bga_filename[64];
-    	int32_t texture_title;
-  		int32_t texture_artist;
-  		int32_t texture_genre;
-  		int32_t texture_load;
-  		int32_t texture_list;
-  		int32_t font_idx;
-  		int32_t game_version;
-  		int32_t other_folder;
-  		int32_t bemani_folder;
-  		int32_t splittable_diff;
-	  	int32_t volume;
-  		int32_t ident_sp[5];
-		int32_t ident_dp[5];
-  		int32_t bga_delay;
-  		int32_t afp_flag;
-		void* afp_data;
-		int32_t bpm;
-    int32_t note_count;
 	};
 
 	static_assert(offsetof(music_t, level) == 0x1E0);
@@ -390,10 +370,4 @@ namespace iidx
 		virtual void sub_1401B0AF0() = 0;
 	};
 #pragma pack(pop)
-   		 // Restored globals for overlay.cpp
-   		 extern bool show_options;
-   		 extern bool show_consume_window;
-   		 extern int option;
-
-
 }
